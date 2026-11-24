@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'; connect-src 'self'">
+<title>BIR Summary List of Sales and Purchases .DAT generator · Open MSME</title>
+<meta name="description" content="Turn a sales or purchases CSV into the validated BIR RELIEF .DAT file a VAT-registered taxpayer in the Philippines submits as the Summary List of Sales and Purchases.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/accent.css">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/theme-init.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <span class="dot"></span>
+      <b>Open MSME</b>
+      <span class="tag">SLSP .DAT generator</span>
+    </a>
+    <span class="sp"></span>
+    <button class="themer" data-themer type="button">Theme</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Accounting, BIR &amp; compliance · Philippines</div>
+      <h1>BIR Summary List of Sales and Purchases .DAT generator for VAT-registered businesses</h1>
+      <p class="lede">Give it a CSV of your month's sales or purchases. It builds the RELIEF <code>.DAT</code> file record by record, checks every field against the Bureau's own rules, and refuses to write a file that would be rejected &mdash; naming the row and the column at fault.</p>
+      <div class="who">
+        <span class="pill">VAT-registered SMEs and their bookkeepers</span>
+        <span class="pill reg">RR 16-2005 s.4.114-3 · BIR RELIEF</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="cols calc">
+      <section class="card">
+        <h2>Which list, and for which month</h2>
+
+        <div class="field">
+          <label>The list to produce</label>
+          <div class="seg" id="list-seg">
+            <button type="button" data-list="sales" aria-pressed="true">Sales (SLS)</button>
+            <button type="button" data-list="purchases" aria-pressed="false">Purchases (SLP)</button>
+          </div>
+          <p class="hintline">A summary list is filed one month at a time, so a VAT quarter is three files of each kind.</p>
+        </div>
+
+        <div class="field">
+          <label for="i-period">Month covered <span class="hint">the tax month, for example 10/2026</span></label>
+          <input type="text" id="i-period" placeholder="10/2026" spellcheck="false" autocomplete="off">
+        </div>
+
+        <h2 class="blockhead">The taxpayer filing it</h2>
+        <p class="hintline">These go in the header record and are repeated on every detail record. They are kept on this computer so you do not retype them each month.</p>
+
+        <div class="field">
+          <label for="i-tin">Your TIN <span class="hint">nine digits; a branch code is not part of this file</span></label>
+          <input type="text" id="i-tin" placeholder="004-123-456" spellcheck="false" autocomplete="off">
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="i-rdo">RDO code <span class="hint">exactly three digits</span></label>
+            <input type="text" id="i-rdo" placeholder="044" spellcheck="false" autocomplete="off" maxlength="3">
+          </div>
+          <div class="field">
+            <label for="i-yearend">Accounting year ends <span class="hint">12 is a calendar year</span></label>
+            <select id="i-yearend">
+              <option value="12">December (calendar year)</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="0">leave blank</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="i-regname">Registered name <span class="hint">for a company</span></label>
+          <input type="text" id="i-regname" placeholder="ABC Trading Corporation" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="i-person">or an individual's name <span class="hint">written SURNAME, First Middle</span></label>
+          <input type="text" id="i-person" placeholder="DELA CRUZ, Juan Perez" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="i-trade">Trade name <span class="hint">optional, if you trade under another name</span></label>
+          <input type="text" id="i-trade" placeholder="ABC Trading" autocomplete="off">
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="i-addr1">Address line 1 <span class="hint">unit, street, barangay</span></label>
+            <input type="text" id="i-addr1" placeholder="123 Main St Brgy San Antonio" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="i-addr2">Address line 2 <span class="hint">city and postal code</span></label>
+            <input type="text" id="i-addr2" placeholder="Makati City 1203" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="field" id="noncreditable-field" hidden>
+          <label for="i-noncreditable">Non-creditable input tax this month <span class="hint">the header must split the input tax; the rest is treated as creditable</span></label>
+          <div class="inp has-pre">
+            <span class="pre">&#8369;</span>
+            <input type="text" id="i-noncreditable" inputmode="decimal" value="0" spellcheck="false">
+          </div>
+        </div>
+
+        <h2 class="blockhead">The month's rows</h2>
+        <div class="field">
+          <label for="f-csv">Your sales or purchases CSV</label>
+          <input type="file" id="f-csv" accept=".csv,.txt,text/csv,text/plain">
+          <p class="hintline">Headings are read flexibly. <a id="dl-template" href="/api/sample?list=sales" download>Download a template</a> if you are starting from a blank spreadsheet.</p>
+        </div>
+
+        <details class="assumptions pathbox">
+          <summary>Or point at a file on this computer, or paste the rows</summary>
+          <div class="field">
+            <label for="p-csv">Path to the CSV</label>
+            <input type="text" id="p-csv" placeholder="~/Documents/sales-october.csv" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="i-paste">Paste the rows, headings and all</label>
+            <textarea id="i-paste" spellcheck="false" placeholder="TIN,Registered Name,Address 1,Taxable Sales,Output Tax&#10;123-456-789-000,Acme Trading Corporation,12 Ayala Avenue,100000.00,12000.00"></textarea>
+          </div>
+        </details>
+
+        <details class="assumptions">
+          <summary>Settings</summary>
+          <div class="field">
+            <label for="i-dateorder">Numeric dates in the CSV are</label>
+            <select id="i-dateorder">
+              <option value="month-first">month first (MM/DD/YYYY)</option>
+              <option value="day-first">day first (DD/MM/YYYY)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label><input type="checkbox" id="i-noconsolidate"> Keep one record per CSV row</label>
+            <p class="hintline">Off by default: a summary list carries one line per customer or supplier for the month, so rows naming the same taxpayer are added together.</p>
+          </div>
+          <div class="field">
+            <label><input type="checkbox" id="i-allowneg"> Allow negative amounts</label>
+            <p class="hintline">Off by default: the list has no column for a negative, so net returns and credit memos against the month's figures instead.</p>
+          </div>
+        </details>
+
+        <div class="btnrow">
+          <button class="btn primary" id="run" type="button">Build the .DAT file</button>
+          <button class="btn ghost" id="reset" type="button">Clear</button>
+        </div>
+        <p class="hintline" id="status" role="status">Nothing is uploaded. Your customers' and suppliers' details are read on this computer only.</p>
+        <div class="note bad" id="error" hidden></div>
+      </section>
+
+      <section class="card sticky">
+        <h2>The file</h2>
+        <div class="result-primary">
+          <div class="k" id="r-label">File name</div>
+          <div class="v filename" id="r-name">&mdash;</div>
+          <div class="sub" id="r-sub">Choose a list, a month and a CSV</div>
+        </div>
+
+        <table class="breakdown">
+          <tbody id="r-totals">
+            <tr><td colspan="2" class="empty">Nothing built yet.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="btnrow">
+          <a class="btn primary" id="dl-dat" href="#" download hidden>Download the .DAT</a>
+          <a class="btn ghost" id="dl-sub" href="#" download hidden>Download the submission copy</a>
+        </div>
+        <p class="hintline" id="r-key"></p>
+      </section>
+    </div>
+
+    <section class="card" id="problems-card" hidden>
+      <h2 id="problems-head">What has to be fixed</h2>
+      <p class="hintline" id="problems-note"></p>
+      <ul class="problems" id="problems"></ul>
+    </section>
+
+    <section class="card" id="notes-card" hidden>
+      <h2>Worth knowing about this file</h2>
+      <ul class="problems" id="notes"></ul>
+    </section>
+
+    <section class="card" id="preview-card" hidden>
+      <h2>The records, as they will be written</h2>
+      <p class="hintline">Field separators and the enclosing quotes are shown exactly as they go in the file. Each record ends with a carriage return and a line feed.</p>
+      <pre class="dat" id="preview"></pre>
+    </section>
+
+    <section class="card" id="layout-card">
+      <h2>The record layout</h2>
+      <p class="hintline" id="layout-note"></p>
+      <div class="seg" id="layout-seg"></div>
+      <div id="layout"></div>
+    </section>
+
+    <section class="card" id="saved" hidden>
+      <h2>Earlier files built on this computer</h2>
+      <div class="tablewrap">
+        <table class="breakdown">
+          <thead>
+            <tr><th>When</th><th>List</th><th>Month</th><th>File</th><th class="num">Records</th><th></th></tr>
+          </thead>
+          <tbody id="saved-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="prose">
+      <h2>How the CSV is read</h2>
+      <p>One row per transaction or per customer, it does not matter which: rows that name the same taxpayer are added together, because a summary list carries <strong>one line per customer or supplier for the month</strong>. The records are then written in alphabetical order by name, which is what the regulation requires.</p>
+      <p>Only the <strong>TIN</strong> column must be present. Everything else is matched by heading &mdash; the usual spellings used by spreadsheets and accounting packages are understood &mdash; and a missing figure counts as nil. Title rows above the headings are skipped, blank rows are dropped, short rows are padded, and comma, semicolon, tab and pipe separated files all read. Amounts may carry a <code>&#8369;</code>, <code>PHP</code> or <code>Php</code> marker and thousands separators.</p>
+      <p>A company is named by its <strong>registered name</strong> and an individual by <strong>surname, first name and middle name</strong>. One record carries one or the other, never both. If your CSV has a single name column, write an individual's name as <code>SURNAME, First Middle</code> &mdash; the comma is how the tool knows where a surname like <code>DELA CRUZ</code> ends, and without it the row is refused rather than guessed at.</p>
+
+      <h2>What is checked before anything is written</h2>
+      <p>Every field of every record is checked against the layout, and the file is written only if nothing fatal is found. If something is wrong you get a list of rows and columns to fix, not a file that looks finished and is not.</p>
+      <ul>
+        <li>Each TIN is exactly nine digits, is not your own, and is not a run of one digit.</li>
+        <li>A purchases record names a supplier and gives an address; a sales record may leave the TIN empty for an unregistered buyer.</li>
+        <li>Each record has exactly the number of fields its layout calls for, and no value is longer than its field.</li>
+        <li>No value contains the field separator, the enclosing quote, a line break, or any of the characters the Bureau's validation module refuses.</li>
+        <li>Amounts carry two decimal places with no separators, nil is written the way the format wants it, and the header's totals equal the sum of the detail records exactly.</li>
+        <li>The tax month is the last day of the month, on every record, with leap years handled by the calendar.</li>
+      </ul>
+
+      <details class="assumptions">
+        <summary>Assumptions &amp; settings</summary>
+        <ul>
+          <li><strong>Value-added tax at 12%</strong> is used only to <em>check</em> that a tax column is consistent with its taxable column, never to work the tax out. A figure more than &#8369;1.00 away from the rate is remarked on, not refused, because a party may be partly zero-rated or exempt. The rate is one named constant and can be overridden.</li>
+          <li><strong>Amounts are held in whole centavos</strong>, so the header's totals are exactly the sum of the records with no drift.</li>
+          <li><strong>Negative amounts are refused</strong> by default, because the list has no column for one. Net returns and credit memos against the month's figures.</li>
+          <li><strong>Text is upper-cased</strong> and accented letters are folded, because the file is a single-byte file and the Bureau's own entry screens upper-case what is typed into them. <code>&#209;</code> is kept, because the validation module makes an exception for it.</li>
+          <li>The <strong>ampersand becomes the word AND</strong> and the <strong>apostrophe is removed</strong>, because the validation module refuses both &mdash; and every such change is reported against the row it came from.</li>
+          <li>A <strong>branch code is not written anywhere</strong>: this file format has no field for one. If your CSV carries one it is read, reported and dropped.</li>
+          <li>Statutory provisions are cited as they stood when this was written. Confirm the current format and rules with the Bureau of Internal Revenue before you file.</li>
+        </ul>
+      </details>
+
+      <div class="note">This tool builds a file from figures you give it. It does not check them against your books, your returns or your invoices, and it is not tax, accounting or legal advice. <strong>Run the file through the Bureau's own validation module before you submit it</strong>, and confirm the current format and the submission channel with the Bureau or a qualified practitioner.</div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Open MSME &middot; open-source tool for MSMEs in India &amp; the Philippines &middot; MIT</span>
+    <span>Runs on your computer. No accounts, no uploads, no telemetry.</span>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

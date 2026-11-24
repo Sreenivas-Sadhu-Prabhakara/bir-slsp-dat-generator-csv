@@ -1,0 +1,6 @@
+﻿TIN,Type,Registered Name,Surname,First Name,Middle Name,Address 1,Address 2,Exempt Sales,Zero-Rated Sales,Taxable Sales,Output Tax
+123-456-789-000,N,Acme Trading Corporation,,,,12 Ayala Avenue,Makati City,0,0,"100,000.00","12,000.00"
+123-456-789-000,N,Acme Trading Corporation,,,,12 Ayala Avenue,Makati City,,,"50,000.00","6,000.00"
+345-678-901-000,I,,Peña,Maria Clara,Reyes,7 Rizal Street,Davao City,0,0,₱18000.00,2160.00
+,N,Walk-in Customers,,,,Public Market,Davao City,0,0,5000.00,600.00
+567-890-123-000,N,"Saint Jude Medical Clinic",,,,88 Quezon Avenue,Quezon City,22000.00,0,0,0

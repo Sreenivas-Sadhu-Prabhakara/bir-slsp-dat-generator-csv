@@ -1,0 +1,5 @@
+TIN,Type,Registered Name,Surname,First Name,Middle Name,Address 1,Address 2,Exempt Purchases,Zero-Rated Purchases,Taxable Services,Taxable Capital Goods,Taxable Other Goods,Input Tax
+005-396-840-000,N,Lopez Power Distribution,,,,Ortigas Avenue,Pasig City,0,0,48000.00,0,0,5760.00
+234-567-890-000,I,,Dela Cruz,Juan,Perez,18 Mabini Street,Caloocan City,0,0,"12,000.00",0,0,"1,440.00"
+345-678-901-002,N,Southern Hardware & Trading,,,,Osmena Boulevard,Cebu City,0,0,0,80000.00,0,9600.00
+456-789-012-000,N,Peña Water District,,,,Poblacion,Los Banos Laguna,3500.00,0,0,0,0,0

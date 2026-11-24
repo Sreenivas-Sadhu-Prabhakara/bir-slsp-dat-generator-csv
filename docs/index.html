@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'">
+<title>BIR Summary List of Sales and Purchases .DAT generator · Open MSME</title>
+<meta name="description" content="Free single-binary tool for VAT-registered businesses in the Philippines: turn a sales or purchases CSV into the BIR RELIEF .DAT file for the Summary List of Sales and Purchases, validated field by field before it is written.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="BIR Summary List of Sales and Purchases .DAT generator">
+<meta property="og:description" content="Turn a sales or purchases CSV into the validated BIR RELIEF .DAT file, on your own computer. The record layout is implemented field by field and nothing is written that would be rejected.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/accent.css">
+<script src="assets/theme-init.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <span class="dot"></span>
+      <b>Open MSME</b>
+      <span class="tag">SLSP .DAT generator</span>
+    </a>
+    <span class="sp"></span>
+    <a class="home" href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a>
+    <button class="themer" data-themer type="button">Theme</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Accounting, BIR &amp; compliance · Philippines</div>
+      <h1>BIR Summary List of Sales and Purchases .DAT generator for VAT-registered businesses</h1>
+      <p class="lede">A single-binary tool that turns a sales or purchases CSV into the RELIEF <code>.DAT</code> file you submit as the Summary List of Sales and Purchases. It builds every record from one field table, checks each one against the Bureau's own rules, and refuses to write a file that would be rejected &mdash; naming the row and the column at fault. It runs on your own computer and sends nothing anywhere.</p>
+      <div class="who">
+        <span class="pill">VAT-registered SMEs and their bookkeepers</span>
+        <span class="pill">Philippines · BIR</span>
+        <span class="pill reg">RR 16-2005 s.4.114-3 · RMC 24-2002 · BIR RELIEF</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="prose">
+      <h2>What it does</h2>
+      <p>A VAT-registered taxpayer has to submit, with each quarterly return, a <strong>Summary List of Sales</strong> and a <strong>Summary List of Purchases</strong>: one line per customer and per supplier, for each month, in the Bureau's own electronic format. The format is a flat comma-separated file with the extension <code>.DAT</code>, produced by the Bureau's RELIEF data entry module &mdash; and the whole difficulty of the job is that the file either matches that format exactly or it is rejected.</p>
+      <p>This tool does that one thing properly. Give it a CSV of the month's rows and it:</p>
+      <ul>
+        <li>reads the CSV defensively &mdash; byte-order mark, any line ending, headings in the usual spellings, title rows above them, blank and short rows, thousands separators, a peso marker;</li>
+        <li>adds together the rows that name the same taxpayer, because a summary list carries one line per customer or supplier for the month, and writes the records in alphabetical order by name as the regulation requires;</li>
+        <li>builds the header record and the detail records from a single field table, checking as it goes that the writer and the table still agree;</li>
+        <li>validates every field &mdash; width, required, characters, number format, date format, the totals &mdash; and <strong>refuses to write the file at all</strong> if anything would be rejected, listing each offending row and column;</li>
+        <li>names the file the way the validation module expects, because that module reads your TIN, the list and the period back out of the name and checks them against the contents;</li>
+        <li>writes both the plain file and the copy carrying the submission validation key, in the single-byte encoding the format uses.</li>
+      </ul>
+
+      <h2>Who it's for</h2>
+      <p>VAT-registered small and medium businesses in the Philippines, and the bookkeepers and accountants who do their monthly and quarterly BIR work. If you have more than a handful of customers or suppliers, hand-building the <code>.DAT</code> is slow and rejection-prone; a spreadsheet cannot produce it at all, because the format is not a CSV export &mdash; the quoting rules differ between the header and the detail records, nil is written one way in one and another way in the other, and the header has to carry totals that match the records exactly.</p>
+
+      <h2>The rule it implements</h2>
+      <p>Under <strong>section 4.114-3 of Revenue Regulations No. 16-2005</strong>, a VAT-registered person must submit, together with the quarterly return, a summary list of sales and a summary list of purchases, giving for each buyer and each seller their name, TIN, address, and the exempt, zero-rated and taxable amounts with the tax. The regulation requires the list to be <em>alphabetically arranged</em> and to consolidate the month's transactions per customer or supplier.</p>
+      <p>The same section says the list must <em>conform to the electronic format prescribed in a Revenue Memorandum Circular</em>, and offers three ways to produce it: the Bureau's own Data Entry Module, an Excel template, or <strong>the taxpayer's own extract program</strong>. A taxpayer who takes the third route must run the result through the Bureau's validation module. That is exactly what this tool is: an extract program. <strong>It does not replace the validation module, and you should still run the file through it before submitting.</strong></p>
+      <p>The record format itself was prescribed by <strong>Revenue Memorandum Circular No. 24-2002</strong> as technical annexes. Those annexes are not published in a form we could obtain, so the layout implemented here was taken instead from the Bureau's own reference implementation: the routine in the RELIEF data entry module that writes the file, cross-checked field by field against the routine in the matching validation module that accepts or rejects it. Where the two agree, which is nearly everywhere, that is as close to ground truth as exists outside the Bureau.</p>
+
+      <h2>The record layout</h2>
+      <p>The file is a <strong>comma-separated</strong> flat file, not fixed-width. Each record ends with a <strong>carriage return and a line feed</strong>. It is a <strong>single-byte</strong> file in the Windows code page the Bureau's module was built on, not UTF-8. A file holds <strong>one header record, first, followed by its detail records</strong> &mdash; and nothing else. There is <em>no</em> trailer or control record: the header carries the totals, and there is no record count anywhere in the file.</p>
+      <p>Two quoting rules apply, and they are not the same:</p>
+      <ul>
+        <li>In the <strong>header</strong>, a text field is always enclosed in double quotes, empty or not &mdash; so an unused name field is written <code>""</code>.</li>
+        <li>In a <strong>detail record</strong>, a text field is enclosed only when it has a value. An empty one is written as nothing at all, so two separators sit side by side: <code>,,</code> rather than <code>,"",</code>.</li>
+      </ul>
+      <p>Amounts are the same way round:</p>
+      <ul>
+        <li>In the <strong>header</strong>, every total carries two decimal places, including nil: <code>0.00</code>.</li>
+        <li>In a <strong>detail record</strong>, a figure carries two decimal places but nil is written as the single digit <code>0</code>.</li>
+      </ul>
+      <p>There is no escape mechanism of any kind. A comma inside a value would split the record, and the validation module refuses one outright; a quote inside a value would end the field early, and the module that writes the file strips it. So values are cleaned before they are written, and anything that cannot be cleaned is refused.</p>
+
+      <h3>Summary List of Sales</h3>
+      <p>Header record, 17 fields:</p>
+      <pre><code> 1  H                      the record type
+ 2  S                      the transaction code
+ 3  TIN of owner           quoted, exactly 9 digits
+ 4  owner registered name  quoted, 50
+ 5  owner last name        quoted, 30
+ 6  owner first name       quoted, 30
+ 7  owner middle name      quoted, 30
+ 8  owner trade name       quoted, 50
+ 9  owner address line 1   quoted, 92   (unit, street, barangay)
+10  owner address line 2   quoted, 74   (district, city, postal code)
+11  total exempt sales     bare, 2 decimal places always
+12  total zero-rated sales bare
+13  total taxable sales    bare
+14  total output tax       bare
+15  RDO code               bare, exactly 3 characters: district 44 is 044
+16  tax month              bare, MM/DD/YYYY, the LAST DAY of the month
+17  month the accounting year ends, 1 to 12, or empty</code></pre>
+      <p>At least one of fields 4 to 8 must have a value, and at least one of 9 and 10.</p>
+      <p>Detail record, 15 fields, one per customer per month:</p>
+      <pre><code> 1  D                      the record type
+ 2  S                      the transaction code
+ 3  customer TIN           quoted when present, 9 digits; may be empty
+ 4  registered name        quoted, 50
+ 5  last name              quoted, 30
+ 6  first name             quoted, 30
+ 7  middle name            quoted, 30
+ 8  address line 1         quoted, 30
+ 9  address line 2         quoted, 30
+10  exempt sales           bare, 2 decimal places, or 0 when nil
+11  zero-rated sales       bare
+12  taxable sales          bare, net of the tax
+13  output tax             bare
+14  TIN of owner           bare (not quoted), the filer's own 9 digits
+15  tax month              bare, the same date as the header's</code></pre>
+      <p>At least one of fields 4 to 7 must have a value. A company fills 4 and leaves 5, 6 and 7 empty; an individual does the opposite. The customer's TIN may be left empty, for a sale to someone who is not registered.</p>
+
+      <h3>Summary List of Purchases</h3>
+      <p>The header has 21 fields: the same first 10, then the six totals (exempt, zero-rated, services, capital goods, other goods, input tax), then the <strong>creditable</strong> and <strong>non-creditable</strong> input tax, then the RDO code, the tax month and the month the accounting year ends. The validation module insists that the total input tax equals the creditable and non-creditable amounts added together.</p>
+      <p>The detail record has 17 fields: the same first 9, then exempt purchases, zero-rated purchases, taxable purchases of services, of capital goods and of goods other than capital goods, the input tax, the filer's TIN and the tax month. Unlike a sales record, a purchases record <strong>must</strong> give the supplier's TIN and an address.</p>
+
+      <h3>The file name</h3>
+      <p>The name is not decoration. The validation module reads it apart by position and checks it against the contents, and offers to rename a file that does not fit:</p>
+      <pre><code>&lt;9-digit TIN&gt;&lt;S or P&gt;&lt;MM&gt;&lt;YYYY&gt;.DAT
+
+004123456S102026.DAT   sales for October 2026
+004123456P102026.DAT   purchases for the same month</code></pre>
+      <p>One file per <strong>month</strong>, not per quarter: a VAT quarter is three sales files and three purchases files.</p>
+
+      <h3>The TIN, and why there is no branch code</h3>
+      <p>Every TIN field in this format holds <strong>exactly nine digits</strong> &mdash; no dashes, and <strong>no branch code anywhere</strong>: not in the header, not in a detail record, not in the file name. The branch code belongs to other BIR formats, and advice to include one here is advice about a different file. If your CSV carries one it is read, reported, and left out. A TIN that is a run of a single digit is refused, because the validation module refuses it.</p>
+
+      <h3>The characters a value may contain</h3>
+      <p>The validation module checks every text field against a fixed list. Besides the control characters, it refuses <code>" $ &amp; ' , \ ` |</code> and everything above the plain ASCII range &mdash; with one deliberate exception, <code>&#209;</code>, which it allows because Filipino surnames need it.</p>
+      <p>Two of those are common in real business names, so this tool substitutes them and tells you it did: an <strong>ampersand becomes the word AND</strong>, so <code>SMITH &amp; SONS</code> stays recognisable, and an <strong>apostrophe is removed</strong>. Accented letters other than <code>&#209;</code> are folded to their plain form, text is upper-cased as the Bureau's own entry screens upper-case it, and every change is reported against the row it came from. Nothing is altered silently.</p>
+
+      <h3>The submission copy</h3>
+      <p>The Bureau's validation module writes a second copy of a validated file into a folder of its own, with one extra line at the end: a twenty-character <strong>validation key</strong> derived from the file's name, the number of records, their total length and a checksum of their contents. It then tells the user that <em>that</em> is the copy to attach for electronic submission.</p>
+      <p>This tool produces both. The plain file is what you give the validation module; the copy in the <code>eRelief</code> folder is the one with the key. The key algorithm is reproduced exactly from the module that generates it &mdash; but whether the current submission channel still requires that line is something we could not confirm, so both files are to hand and you can use whichever yours asks for.</p>
+
+      <h2>Install &amp; run</h2>
+      <p>It is one Go program with no dependencies beyond the standard library, so there is nothing to install and nothing to configure.</p>
+      <pre><code>git clone https://github.com/sreenivas-sadhu-prabhakara/bir-slsp-dat-generator-csv.git
+cd bir-slsp-dat-generator-csv
+
+# build a single binary
+go build -o bir-slsp-dat-generator-csv .
+./bir-slsp-dat-generator-csv
+
+# or just run it
+go run .</code></pre>
+      <p>Then open <code>http://127.0.0.1:8080/</code> in a browser. Two flags change the defaults:</p>
+      <pre><code>./bir-slsp-dat-generator-csv -addr 127.0.0.1:9000 -data ~/bir/slsp-data.json</code></pre>
+      <p>It also runs once from the command line, which is what a month-end script wants. It exits 0 when the file was written, 1 when it was refused, and 2 when the arguments or the CSV could not be used at all:</p>
+      <pre><code>./bir-slsp-dat-generator-csv \
+    -csv sales-october.csv -list sales -period 10/2026 \
+    -tin 004-123-456-000 -name "ABC Trading Corporation" \
+    -address "123 Main St Brgy San Antonio|Makati City 1203" \
+    -rdo 044 -out ./filings/
+
+# print the whole record layout and stop
+./bir-slsp-dat-generator-csv -layout
+
+# write a CSV template to start from
+./bir-slsp-dat-generator-csv -sample purchases &gt; purchases-template.csv</code></pre>
+      <p>Only the TIN column has to be present in the CSV. A list like this works:</p>
+      <pre><code>TIN,Type,Registered Name,Surname,First Name,Middle Name,Address 1,Address 2,Taxable Sales,Output Tax
+123-456-789-000,N,Acme Trading Corporation,,,,12 Ayala Avenue,Makati City,100000.00,12000.00
+345-678-901-000,I,,Santos,Maria Clara,Reyes,7 Rizal Street,Davao City,18000.00,2160.00</code></pre>
+      <p>and produces this:</p>
+      <pre><code>H,S,"004123456","ABC TRADING CORPORATION","","","","ABC TRADING","123 MAIN ST","MAKATI CITY",0.00,0.00,118000.00,14160.00,044,10/31/2026,12
+D,S,"345678901",,"SANTOS","MARIA CLARA","REYES","7 RIZAL STREET","DAVAO CITY",0,0,18000.00,2160.00,004123456,10/31/2026
+D,S,"123456789","ACME TRADING CORPORATION",,,,"12 AYALA AVENUE","MAKATI CITY",0,0,100000.00,12000.00,004123456,10/31/2026</code></pre>
+
+      <h2>What it stores</h2>
+      <p>One JSON file on your own computer, <code>./bir-slsp-dat-generator-csv-data.json</code> by default, holding the filing taxpayer's details so you do not retype them each month, and the last 25 files you built so you can download one again. It is written atomically &mdash; to a temporary file that is then renamed &mdash; so an interrupted write cannot corrupt it, and it is created readable only by you.</p>
+      <p>Nothing else leaves the machine. The tool binds to <strong>127.0.0.1</strong>, makes no outbound network calls of any kind, has no accounts, no analytics and no telemetry, and loads no fonts, scripts or styles from anywhere but itself. Your customers' and suppliers' names, TINs and figures never go anywhere. Delete that one file and the tool knows nothing.</p>
+
+      <h2>Features</h2>
+      <div class="featgrid">
+        <div class="feat">
+          <h3>The layout lives in one place</h3>
+          <p>Every field, width, token and quoting rule is one table. The writer names each field as it fills it and stops if the table disagrees, so the code and the format cannot drift apart.</p>
+        </div>
+        <div class="feat">
+          <h3>It refuses rather than guesses</h3>
+          <p>Nothing is written if any record would be rejected. You get a list of CSV rows and columns to fix, each named by line number, instead of a file that looks finished.</p>
+        </div>
+        <div class="feat">
+          <h3>Byte-exact output</h3>
+          <p>Both quoting conventions, both ways of writing nil, CR LF line endings, and a single-byte encoding in which <code>&#209;</code> is one byte and not two.</p>
+        </div>
+        <div class="feat">
+          <h3>Defensive about your CSV</h3>
+          <p>Byte-order mark, any line ending, four separators, headings in many spellings, title rows, blank rows, short rows, thousands separators, a peso marker. Bad cells are reported by line, never guessed.</p>
+        </div>
+        <div class="feat">
+          <h3>Consolidated and alphabetical</h3>
+          <p>Rows naming the same taxpayer are added together and the records are sorted by name, which is what the regulation asks for and what the Bureau's module does.</p>
+        </div>
+        <div class="feat">
+          <h3>Totals that always agree</h3>
+          <p>Amounts are whole centavos, so the header's totals are exactly the sum of the records &mdash; the one cross-check the validation module performs on the file as a whole.</p>
+        </div>
+        <div class="feat">
+          <h3>Nothing changed in silence</h3>
+          <p>Every substitution &mdash; an ampersand, an apostrophe, a shortened address, a dropped branch code &mdash; is reported against the row it came from.</p>
+        </div>
+        <div class="feat">
+          <h3>Both copies, and the layout</h3>
+          <p>The plain file for the validation module and the keyed copy for electronic submission. <code>-layout</code> prints the whole field table so you can check it yourself.</p>
+        </div>
+      </div>
+
+      <details class="assumptions">
+        <summary>Assumptions &amp; settings</summary>
+        <ul>
+          <li><strong>Value-added tax at 12%</strong> &mdash; the rate imposed under the National Internal Revenue Code as amended. It is a single named constant, used only to <em>check</em> that a tax column is consistent with its taxable column, never to work the tax out. A figure more than &#8369;1.00 away from the rate is remarked on, never refused, because a party may be partly zero-rated or exempt. It can be overridden for a period when another rate applied. Confirm the current rate with the Bureau.</li>
+          <li><strong>Header totals must match the detail records.</strong> The validation module allows a difference of up to &#8369;2.00; this tool makes them agree exactly, because it computes them from the records it writes.</li>
+          <li><strong>Amounts are held in whole centavos</strong>, so a thousand records total exactly with no drift.</li>
+          <li><strong>Negative amounts are refused</strong> by default: the list has no column for one, so net returns, discounts and credit memos against the month's figures. A setting lets one through if you have been told to file it that way.</li>
+          <li><strong>One month per file.</strong> The tax month is the last day of the month and appears on every record, with leap years handled by the calendar rather than a table.</li>
+          <li><strong>A branch code is never written</strong>, because the format has no field for one.</li>
+          <li><strong>Field widths</strong> are the Bureau's module's own column widths: 50 characters for a registered name or trade name, 30 for each part of an individual's name and for each of a customer's or supplier's two address lines, 92 and 74 for the filer's two, 3 for the RDO code. A longer value is shortened and you are told.</li>
+          <li><strong>Ceilings the validation module imposes:</strong> at most 25 fields per record and 254 characters per field, because it reads the file into a table of that shape; and at most 600 characters per record, because the routine that appends the submission key reads no further and drops the rest without a word. A record that long is refused.</li>
+        </ul>
+      </details>
+
+      <details class="assumptions">
+        <summary>What could not be sourced, and what it means for you</summary>
+        <ul>
+          <li><strong>The layout itself is sourced</strong> from the Bureau's RELIEF data entry module and its matching validation module, field by field, from the code that writes the file and the code that accepts or rejects it. Both agree. <code>-layout</code> prints every field with how well it could be sourced.</li>
+          <li><strong>The prescribing annexes to RMC 24-2002 could not be obtained</strong> in a published form. The layout here comes from the Bureau's reference implementation instead &mdash; arguably the stronger source, since the validation module is what actually accepts or rejects your file, but it is not the text of the circular.</li>
+          <li><strong>Whether the module we read is the current one</strong> could not be confirmed. It is the latest version we could obtain, and no later one is referred to anywhere, but the Bureau's download pages have since moved. <strong>Check the version offered on the Bureau's own site before relying on this for a filing.</strong></li>
+          <li><strong>No real, published <code>.DAT</code> file</strong> could be found to compare against, byte for byte. The output was derived from the writing routine and checked against the validating routine, not against a specimen.</li>
+          <li><strong>Whether electronic submission still requires the validation key line</strong> could not be confirmed. The algorithm is certain; its current necessity is not. Both copies are produced, so you can use whichever your submission channel asks for.</li>
+          <li><strong>Line endings</strong> are a carriage return and a line feed, which follows from the file-writing call the module uses, rather than from a published specification.</li>
+          <li><strong>The regulation asks for more than the format carries.</strong> RR 16-2005 lists &ldquo;sales subject to final VAT withheld&rdquo; and the purchases equivalent as required content, but the RELIEF record layout has no field for them. This tool follows the layout, because that is what the validation module checks.</li>
+        </ul>
+      </details>
+
+      <div class="note">This tool builds a file from figures you give it. It does not check them against your books, your returns or your invoices, it does not decide what is taxable, exempt or zero-rated, and it is not tax, accounting or legal advice. <strong>Run the file through the Bureau of Internal Revenue's own validation module before you submit it</strong>, and confirm the current format, the deadlines and the submission channel with the Bureau or a qualified practitioner.</div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Open MSME &middot; open-source tool for MSMEs in India &amp; the Philippines &middot; MIT</span>
+    <span><a href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a></span>
+  </div>
+</footer>
+
+<script src="assets/ui.js"></script>
+</body>
+</html>
